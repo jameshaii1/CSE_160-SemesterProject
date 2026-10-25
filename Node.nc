@@ -12,6 +12,8 @@
 #include "includes/CommandMsg.h"
 #include "includes/sendInfo.h"
 #include "includes/channels.h"
+#include "includes/protocol.h"
+
 
 module Node{
    uses interface Boot;
@@ -22,6 +24,9 @@ module Node{
    uses interface SimpleSend as Sender;
 
    uses interface CommandHandler;
+
+   uses interface NeighborDiscovery; 
+   uses interface Flooding; 
 }
 
 implementation{
@@ -39,6 +44,7 @@ implementation{
    event void AMControl.startDone(error_t err){
       if(err == SUCCESS){
          dbg(GENERAL_CHANNEL, "Radio On\n");
+        call NeighborDiscovery.findNeighbor();
       }else{
          //Retry until successful
          call AMControl.start();
@@ -48,10 +54,20 @@ implementation{
    event void AMControl.stopDone(error_t err){}
 
    event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
-      dbg(GENERAL_CHANNEL, "Packet Received\n");
+      //dbg(GENERAL_CHANNEL, "Packet Received\n");
       if(len==sizeof(pack)){
          pack* myMsg=(pack*) payload;
-         dbg(GENERAL_CHANNEL, "Package Payload: %s\n", myMsg->payload);
+         if (myMsg -> protocol == PROTOCOL_FLOOD){
+            if (call Flooding.flood(*myMsg) == SUCCESS){
+            dbg(GENERAL_CHANNEL, "Package Payload: %s\n", myMsg->payload);
+            }
+         }
+         if (myMsg -> protocol == PROTOCOL_NEIGHBOR){
+               call NeighborDiscovery.reply(*myMsg);
+            }
+         if (myMsg -> protocol == PROTOCOL_PINGREPLY){
+            call NeighborDiscovery.addNeighbor(*myMsg);
+         }
          return msg;
       }
       dbg(GENERAL_CHANNEL, "Unknown Packet Type %d\n", len);
@@ -61,17 +77,29 @@ implementation{
 
    event void CommandHandler.ping(uint16_t destination, uint8_t *payload){
       dbg(GENERAL_CHANNEL, "PING EVENT \n");
-      makePack(&sendPackage, TOS_NODE_ID, destination, 0, 0, 0, payload, PACKET_MAX_PAYLOAD_SIZE);
+      makePack(&sendPackage, TOS_NODE_ID, destination, MAX_TTL, PROTOCOL_FLOOD, 0, payload, PACKET_MAX_PAYLOAD_SIZE);
       call Sender.send(sendPackage, destination);
+      call Flooding.flood(sendPackage);
    }
 
-   event void CommandHandler.printNeighbors(){}
 
-   event void CommandHandler.printRouteTable(){}
+   event void CommandHandler.printNeighbors(){
+      call NeighborDiscovery.printNeighbors();
+   }
 
-   event void CommandHandler.printLinkState(){}
+   event void CommandHandler.printRouteTable(){
+   }
+   event void CommandHandler.flood(){}
 
-   event void CommandHandler.printDistanceVector(){}
+   event void CommandHandler.findNeighbor(){}
+
+   event void CommandHandler.printLinkState(){
+      
+   }
+
+   event void CommandHandler.printDistanceVector(){
+
+   }
 
    event void CommandHandler.setTestServer(){}
 
@@ -89,4 +117,21 @@ implementation{
       Package->protocol = protocol;
       memcpy(Package->payload, payload, length);
    }
+   void makeFPack(floodpack *Package, uint16_t src, uint16_t dest, uint16_t TTL, FLOOD_PROTOCOL, uint16_t seq, uint8_t* payload, uint8_t length){
+      Package->src = src;
+      Package->dest = dest;
+      Package->TTL = TTL;
+      Package->seq = seq;
+      Package->protocol = protocol;
+      memcpy(Package->payload, payload, length);
+   }
+   void makeNPack(neighborpack *Package, uint16_t src, uint16_t dest, uint16_t TTL, NEIGHBOR_PROTOCOL, uint16_t seq, uint8_t* payload, uint8_t length){
+      Package->src = src;
+      Package->dest = dest;
+      Package->TTL = TTL;
+      Package->seq = seq;
+      Package->protocol = protocol;
+      memcpy(Package->payload, payload, length);
+   }
+   
 }

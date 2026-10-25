@@ -25,6 +25,9 @@ typedef nx_struct pack{
 	nx_uint8_t payload[PACKET_MAX_PAYLOAD_SIZE];
 }pack;
 
+*/
+
+
 /*
  * logPack
  * 	Sends packet information to the general channel.

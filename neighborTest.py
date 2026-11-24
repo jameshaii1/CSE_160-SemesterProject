@@ -36,12 +36,18 @@ def main():
 
     # Dump node 3's neighbor table -- it has the most links in example.topo
     # (1, 2, 4, 5, 6), so it's the clearest node to inspect.
-    s.moteOff(4);
-    s.runTime(9);
+  #  s.moteOff(4);
+ #   s.runTime(9);
+#
+   # s.neighborDMP(3);
 
-    s.neighborDMP(3);
+   # s.runTime(1);
+#
+ #   s.moteOn(4);
+  #  s.runTime(15);
+   # s.neighborDMP(3);
 
-    s.runTime(1);
+    #s.runTime(1);
 
 if __name__ == '__main__':
     main()

@@ -1,7 +1,7 @@
 interface CommandHandler{
    // Events
    event void ping(uint16_t destination, uint8_t *payload);
-   event void flood();
+   event void flood(uint16_t destination, uint8_t *payload);
    event void findNeighbor();
    event void printNeighbors();
    event void printRouteTable();
@@ -11,4 +11,6 @@ interface CommandHandler{
    event void setTestClient();
    event void setAppServer();
    event void setAppClient();
+   event void setTestClose();
+   event void setTestWrite();
 }

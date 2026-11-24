@@ -11,4 +11,6 @@ interface NeighborDiscovery{
   command void addNeighbor(pack neighborResponse);
 
   command void printNeighbors();
+
+  command bool isNeighbor(uint16_t id);
 }

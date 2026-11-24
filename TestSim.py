@@ -13,6 +13,10 @@ class TestSim:
     CMD_PING = 0
     CMD_NEIGHBOR_DUMP = 1
     CMD_ROUTE_DUMP=3
+    CMD_TEST_CLIENT=4
+    CMD_TEST_SERVER=5
+    CMD_TEST_CLOSE = 55
+    CMD_TEST_WRITE = 99
 
     # CHANNELS - see includes/channels.h
     COMMAND_CHANNEL="command";
@@ -129,6 +133,25 @@ class TestSim:
         print ('Adding Channel', channelName);
         self.t.addChannel(channelName, out);
 
+    def testServer(self, destination):
+        self.sendCMD(self.CMD_TEST_SERVER, destination, "transport command" )
+
+    def testClient(self, destination):
+        self.sendCMD(self.CMD_TEST_CLIENT, destination, "transport command")
+
+
+    def testClose(self, destination):
+        self.sendCMD(self.CMD_TEST_CLOSE, destination, "transport command")
+
+    def testWrite(self,destination):
+        self.sendCMD(self.CMD_TEST_WRITE, destination, "transport command")
+
+    
+    def runSeconds(self, sec):
+        end = self.t.time() + int(sec * 10**10)
+        while self.t.time() < end:
+            self.t.runNextEvent()
+
 def main():
     s = TestSim();
     s.runTime(10);
@@ -137,6 +160,7 @@ def main():
     s.bootAll();
     s.addChannel(s.COMMAND_CHANNEL);
     s.addChannel(s.GENERAL_CHANNEL);
+    s.addChannel(s.ROUTING_CHANNEL);
 
     s.runTime(20);
     s.ping(1, 2, "Hello, World");

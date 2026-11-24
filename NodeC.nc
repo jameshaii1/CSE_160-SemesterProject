@@ -38,4 +38,13 @@ implementation {
     components FloodingC; 
     Node.Flooding -> FloodingC;
 
+    components DistanceVectorC; 
+    Node.DistanceVector -> DistanceVectorC; 
+
+    components IPC; 
+    Node.IP -> IPC; 
+
+    components TCPC;
+    Node.Transport ->TCPC; 
+
 }

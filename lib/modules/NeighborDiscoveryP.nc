@@ -4,7 +4,7 @@
 
 module NeighborDiscoveryP{
     provides interface NeighborDiscovery;
-    uses interface AMPacket; 
+    
     uses interface Timer<TMilli> as neighborTimer;
     uses interface Timer<TMilli> as offsetTimer;
     uses interface SimpleSend as neighborSender;
@@ -27,6 +27,7 @@ implementation {
 
     uint16_t seqCounter = 0;
     uint16_t stw = 0; //sent this window
+    
 
 
 
@@ -37,7 +38,6 @@ implementation {
 
     event void offsetTimer.fired(){
         call neighborTimer.startPeriodic(750);
-        dbg(NEIGHBOR_CHANNEL, "REFIRING NEIGHBOR DISCOVERY \n");
 
     }
 
@@ -98,7 +98,7 @@ implementation {
         replyPack.src = TOS_NODE_ID; 
         replyPack.dest = neighborPing.src; 
         replyPack.TTL = 1; 
-        replyPack.protocol = PROTOCOL_PINGREPLY; 
+        replyPack.protocol = PROTOCOL_NEIGHBOR_PINGREPLY; 
         replyPack.seq = neighborPing.seq;
 
         call neighborSender.send(replyPack, replyPack.dest);
@@ -111,12 +111,14 @@ implementation {
             if (call neighborTable.contains(neighborResponse.src)){
                 replyCount = call neighborTable.get(neighborResponse.src);
                 call neighborTable.insert(neighborResponse.src, (replyCount + 1));
+        //       dbg(NEIGHBOR_CHANNEL, "Packet received from Node: %hu Seq: %hu total seq: %hu \n",neighborResponse.src, neighborResponse.seq, seqCounter);
             } else{
                 call neighborTable.insert(neighborResponse.src, 1);
+                /*dbg(NEIGHBOR_CHANNEL, "Packet received from Node: %hu Seq: %hu total seq: %hu \n",neighborResponse.src, neighborResponse.seq, seqCounter); */
             } 
         }
         else {
-            dbg(NEIGHBOR_CHANNEL, "packet failed reply src=%hu replyseq=%hu mySeq=%hu\n", neighborResponse.src, neighborResponse.seq, seqCounter);
+          /*  dbg(NEIGHBOR_CHANNEL, "packet failed reply sent from node: %hu seq number: %hu total seq counter: %hu\n", neighborResponse.src, neighborResponse.seq, seqCounter);*/
         }
     }
 
@@ -131,11 +133,22 @@ implementation {
             if (call linkQualityTable.contains(keys[i])){
                 quality = call linkQualityTable.get(keys[i]);
                 dbg(NEIGHBOR_CHANNEL, "Node: %lu   Link Quality: %hu%%\n", keys[i], quality);
-            } else {
-                dbg(NEIGHBOR_CHANNEL, "Node: %lu   Link Quality: n/a (new)\n", keys[i]);
             }
+               dbg(NEIGHBOR_CHANNEL, "Node: %lu   Link Quality: n/a (new)\n", keys[i]);
+            
         }
         
+    }
+
+    //Is this node a neighbor of mine
+    command bool NeighborDiscovery.isNeighbor(uint16_t id ){
+
+        if(call neighborTable.contains(id)){
+            return TRUE; 
+        }
+        else{ 
+            return FALSE; 
+        }
     }
 
 }

@@ -18,7 +18,7 @@ module FloodingP{
   provides interface Flooding;
   uses interface SimpleSend as FloodSender;
 
-  uses interface Hashmap<uint32_t> as NodeTable; 
+  uses interface Hashmap<uint32_t> as SeenCache; 
 
 
 }
@@ -38,7 +38,7 @@ implementation {
       tablekey = ((uint32_t)floodpack.src << 16) + floodpack.seq;
 
       //check if current node is already in the table
-      if (call NodeTable.contains(tablekey)){
+      if (call SeenCache.contains(tablekey)){
         dbg(FLOODING_CHANNEL, "KEY FOUND IN CACHE\n");
         return FAIL;
       }
@@ -46,8 +46,8 @@ implementation {
       dbg(FLOODING_CHANNEL, "RECEIVED FLOOD PACK FROM: Node %hu\n", floodpack.src);
       dbg(FLOODING_CHANNEL, "SENDING TO: Node %hu \n", floodpack.dest);
       //add to the cache
-      call NodeTable.insert(tablekey,1);
-//      dbg(FLOODING_CHANNEL, "Adding to cache: %lu\n", tablekey);
+      call SeenCache.insert(tablekey,1);
+//  dbg(FLOODING_CHANNEL, "Adding to cache: %lu\n", tablekey);
 
 
       //decrement TTL after a successful cache

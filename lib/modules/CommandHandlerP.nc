@@ -5,7 +5,6 @@
  *
  */
 
-
 #include "../../includes/CommandMsg.h"
 #include "../../includes/command.h"
 #include "../../includes/channels.h"
@@ -58,6 +57,10 @@ implementation{
                 signal CommandHandler.printNeighbors();
                 break;
 
+            case CMD_DV_DUMP:
+                signal CommandHandler.printDistanceVector();
+                break;
+
             case CMD_LINKSTATE_DUMP:
                 dbg(COMMAND_CHANNEL, "Command Type: Link State Dump\n");
                 signal CommandHandler.printLinkState();
@@ -74,9 +77,25 @@ implementation{
                 break;
 
             case CMD_TEST_SERVER:
-                dbg(COMMAND_CHANNEL, "Command Type: Client\n");
+                dbg(COMMAND_CHANNEL, "Command Type: SERVER\n");
                 signal CommandHandler.setTestServer();
                 break;
+
+            case CMD_TEST_CLOSE:
+                dbg(COMMAND_CHANNEL, "Command Type: Client\n");
+                signal CommandHandler.setTestClose();
+                break;
+
+            case CMD_TEST_WRITE:
+                dbg(COMMAND_CHANNEL, "Command Type: Client\n");
+                signal CommandHandler.setTestWrite();
+                break;           
+
+            case CMD_FLOOD: 
+                dbg(FLOODING_CHANNEL, "COMMAND TYPE: FLOOD \n");
+                signal CommandHandler.flood(buff[0], &buff[1]);
+                break; 
+
 
             default:
                 dbg(COMMAND_CHANNEL, "CMD_ERROR: \"%d\" does not match any known commands.\n", msg->id);
